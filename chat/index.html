@@ -345,13 +345,23 @@
 
         // --- GLOBAL VARIABLES (Provided by Canvas Environment) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9GsP72R_43JW7rG8Dpvcvt_n2FbQe5SM",
+            authDomain: "bobbyreichert-chat.firebaseapp.com",
+            projectId: "bobbyreichert-chat",
+            storageBucket: "bobbyreichert-chat.appspot.com",
+            messagingSenderId: "743766854322",
+            appId: "1:743766854322:web:a492e9eb137d903a7b17ab",
+            measurementId: "G-H5ZNQ9L4ME"
+        };
+
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // --- FIREBASE GLOBALS ---
-        let app;
-        let db;
-        let auth;
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
         let currentUserId = null;
         let currentUserEmail = null;
         let currentChatId = null;
