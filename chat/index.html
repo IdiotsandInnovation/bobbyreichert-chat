@@ -1036,22 +1036,16 @@
             // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
-            const accepted = localStorage.getItem(COOKIE_KEY);
 
-            if (accepted === 'true') {
-                if (banner) { banner.style.display = 'none'; }
-            } else {
-                if (banner) { banner.style.display = 'block'; }
-                if (acceptButton) {
-                    acceptButton.addEventListener('click', () => {
-                        localStorage.setItem(COOKIE_KEY, 'true');
-                        if (banner) {
-                            banner.classList.add('fade-out');
-                            setTimeout(() => { banner.style.display = 'none'; }, 500); 
-                        }
-                    });
-                }
+            if (localStorage.getItem(COOKIE_KEY) === 'true') {
+                banner.remove();
             }
+
+            acceptButton.addEventListener('click', () => {
+                localStorage.setItem(COOKIE_KEY, 'true');
+                banner.classList.add('fade-out');
+                setTimeout(() => banner.remove(), 500);
+            });
 
             
             // 4. Dropdown Toggle Logic (More Menu) - Simplified for functionality
@@ -1064,7 +1058,11 @@
                     dropdown.querySelector('button').setAttribute('aria-expanded', isVisible ? 'true' : 'false');
                  }
             };
-            dropdown.addEventListener('click', toggleMenu); // Use click for desktop dropdown
+            dropdown.querySelector('button').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleMenu();
+            });
+ // Use click for desktop dropdown
             document.addEventListener('click', (event) => {
                 if (window.innerWidth >= 768 && !dropdown.contains(event.target) && menu.classList.contains('visible')) {
                     menu.classList.remove('visible');
@@ -1073,10 +1071,7 @@
 
             // --- FIREBASE SETUP ---
             try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('Debug'); // Enable Firestore logging
+                
 
                 // 5. Authentication State Listener
                 onAuthStateChanged(auth, (user) => {
