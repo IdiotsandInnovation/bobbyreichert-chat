@@ -601,6 +601,10 @@
 
             const email = authEmailInput.value;
             const password = authPasswordInput.value;
+            console.log("Attempting auth:", {
+                mode: isLoginMode ? "login" : "signup",
+                email
+            });
 
             try {
                 let userCredential;
@@ -1079,28 +1083,17 @@
                 setLogLevel('Debug'); // Enable Firestore logging
 
                 // 5. Authentication State Listener
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        currentUserEmail = user.email || 'anonymous';
-                        updateAppView(true);
-                        setupChatListener();
-                    } else {
-                        // Attempt initial custom token sign-in or anonymous sign-in
-                        if (initialAuthToken) {
-                             await signInWithCustomToken(auth, initialAuthToken).catch(err => {
-                                console.error("Custom Auth Token Failed:", err);
-                                updateAppView(false);
-                            });
-                        } else {
-                            await signInAnonymously(auth).catch(err => {
-                                console.error("Anonymous Sign-in Failed:", err);
-                                updateAppView(false);
-                            });
-                        }
-                        updateAppView(false);
-                    }
+                onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    currentUserEmail = user.email;
+                    updateAppView(true);
+                    setupChatListener();
+                } else {
+                    updateAppView(false);
+                }
                 });
+
 
                 // --- EVENT LISTENERS ---
                 
