@@ -369,7 +369,7 @@
         let unsubscribeMessages = null;
 
         // --- AUTH STATE ---
-        let isLoginMode = true;
+        //let isLoginMode = true;
 
         // --- CHAT STATE ---
         let activeChatId = null;
@@ -537,14 +537,14 @@
 
         /**
          * Toggles the UI between Login and Registration.
-         */
+         
         function toggleAuthUI() {
             isLoginMode = !isLoginMode;
             authTitle.textContent = isLoginMode ? 'Sign In' : 'Create Account';
             authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
             toggleAuthModeBtn.textContent = isLoginMode ? 'Need an account? Sign Up' : 'Already have an account? Sign In';
             authErrorMessage.classList.add('hidden');
-        }
+        }*/
 
         /**
          * Shows the custom modal with the specified content mode.
@@ -597,37 +597,32 @@
             e.preventDefault();
             authErrorMessage.classList.add('hidden');
             authSubmitBtn.disabled = true;
-            authSubmitBtn.textContent = 'Processing...';
+            authSubmitBtn.textContent = 'Signing in...';
 
-            const email = authEmailInput.value;
+            const email = authEmailInput.value.trim();
             const password = authPasswordInput.value;
-            console.log("Attempting auth:", {
-                mode: isLoginMode ? "login" : "signup",
-                email
-            });
 
             try {
-                let userCredential;
-                if (isLoginMode) {
-                    userCredential = await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    // Add user to the public users collection after successful registration
-                    await setDoc(doc(db, USERS_COLLECTION, userCredential.user.uid), {
-                        email: email,
-                        displayName: email.split('@')[0],
-                        uid: userCredential.user.uid,
-                        createdAt: serverTimestamp()
-                    });
-                }
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged will handle UI switch
             } catch (error) {
-                authErrorMessage.textContent = `Authentication failed: ${error.message}`;
+                console.error("Auth error:", error.code, error.message);
+
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                authErrorMessage.textContent = 'Invalid email or password.';
+                } else if (error.code === 'auth/too-many-requests') {
+                authErrorMessage.textContent = 'Too many attempts. Try again later.';
+                } else {
+                authErrorMessage.textContent = error.message;
+                }
+
                 authErrorMessage.classList.remove('hidden');
             } finally {
                 authSubmitBtn.disabled = false;
-                authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
+                authSubmitBtn.textContent = 'Sign In';
             }
         }
+
 
         /**
          * Signs out the current user.
@@ -1038,7 +1033,7 @@
             // 2. Initialize mobile menu elements and listeners
             setupMobileMenuListeners();
 
-            // 3. Cookie Consent Logic (Original code preserved)
+            // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
             const accepted = localStorage.getItem(COOKIE_KEY);
@@ -1057,6 +1052,7 @@
                     });
                 }
             }
+
             
             // 4. Dropdown Toggle Logic (More Menu) - Simplified for functionality
             const dropdown = document.getElementById('more-dropdown');
@@ -1099,7 +1095,7 @@
                 
                 // Auth Forms
                 authForm.addEventListener('submit', handleAuthSubmit);
-                toggleAuthModeBtn.addEventListener('click', toggleAuthUI);
+                //toggleAuthModeBtn.addEventListener('click', toggleAuthUI);
                 logoutButtonDesktop.addEventListener('click', handleSignOut);
                 logoutButtonMobile.addEventListener('click', handleSignOut);
 
