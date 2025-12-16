@@ -291,7 +291,7 @@
         // --- NEW FUNCTION: Open Rename Modal ---
         window.openRenameModal = () => {
             if (!currentChatId) return;
-            // Get current name from the header
+            // Attempt to get current name from the header, falling back to participant list if it's the default name
             const currentName = document.getElementById('chat-header-name').textContent;
             document.getElementById('rename-chat-input').value = currentName;
             openModal('rename-chat-modal');
@@ -330,7 +330,7 @@
             const items = document.getElementById('chat-list').children;
             for(let item of items) {
                 item.classList.remove('bg-blue-100', 'dark:bg-blue-900');
-                // We'd ideally match ID logic here, but for simplicity of this demo just refreshing UI
+                // Note: The listener will refresh the list, highlighting the correct one via the new snapshot.
             }
             
             // Show Chat View
@@ -370,7 +370,9 @@
         window.setReplyTarget = (messageId, senderName, content) => {
             if (editingMessage) cancelEdit(); // Cancel edit if active
             replyingToMessage = { id: messageId, senderName: senderName, content: content };
-            replyContent.innerHTML = `Replying to **${senderName}**: ${content.length > 50 ? content.substring(0, 50) + '...' : content}`;
+            // Use bold markdown for the sender name
+            const displayContent = content.length > 50 ? content.substring(0, 50) + '...' : content;
+            replyContent.innerHTML = `Replying to **${senderName}**: ${displayContent}`;
             replyPanel.classList.remove('hidden');
             messageInput.focus();
         }
@@ -431,8 +433,11 @@
             // REPLY UI
             let replyHtml = '';
             if (msg.replyTo) {
+                // Determine text color based on if it's my message (to ensure contrast on blue background) or not
+                const replyTextColorClass = isMe ? 'text-white/80' : 'text-gray-600 dark:text-gray-300';
+                
                 replyHtml = `
-                    <div class="border-l-4 border-blue-400 pl-3 mb-2 pt-1 pb-1 bg-gray-100 dark:bg-gray-600 rounded-r text-xs ${isMe ? 'text-white/80' : 'text-gray-600 dark:text-gray-300'}">
+                    <div class="border-l-4 border-blue-400 pl-3 mb-2 pt-1 pb-1 bg-gray-100 dark:bg-gray-600 rounded-r text-xs ${replyTextColorClass}">
                         <p class="font-bold text-blue-600 dark:text-blue-300">${msg.replyTo.senderName}</p>
                         <p class="truncate">${msg.replyTo.content}</p>
                     </div>
@@ -442,6 +447,7 @@
             // EDIT UI (for my own messages)
             let editButtonHtml = '';
             if (isMe && msg.type === 'text') {
+                // The regex and backticks are used to properly escape the content string for the JS function call
                 editButtonHtml = `
                     <button onclick="setEditTarget('${id}', \`${msg.content.replace(/`/g, '\\`')}\`)" 
                             class="text-gray-400 hover:text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
@@ -776,7 +782,7 @@
 
                 <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                     <div id="reply-panel" class="hidden mb-2 p-2 border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-700/50 rounded-r flex justify-between items-center text-sm">
-                        <span id="reply-content" class="text-gray-600 dark:text-gray-300 font-medium truncate"></span>
+                        <span id="reply-content" class="text-gray-900 dark:text-gray-300 font-medium truncate"></span>
                         <button onclick="cancelReply()" class="text-gray-400 hover:text-red-500 ml-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
